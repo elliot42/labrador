@@ -36,7 +36,7 @@ class Labrador:
         self.regexp = re.compile("(?P<protocol>.*)://(\S+)$")
         self.cache = cache
 
-    def get(self, uri):
+    def get(self, uri, check_cache=True):
         match = self.regexp.match(uri)
         protocol = match.group('protocol') if match else 'string'
 
@@ -44,7 +44,7 @@ class Labrador:
         retriever = self.retrievers.get(protocol)
 
         # check cache first if one registered
-        if cache_retriever:
+        if cache_retriever and check_cache:
             status, value = cache_retriever(uri)
             if value:
                 return ['cache', status, value]
@@ -58,17 +58,15 @@ class Labrador:
 
         return [None, None, None]
 
-    def g(self, uri):
+    def g(self, uri, check_cache=True):
         """Convenient caller than only returns a value, not status info"""
-        return self.get(uri)[2]
+        return self.get(uri, check_cache=check_cache)[2]
 
-def get(uri):
+def get(uri, check_cache=True):
     """Module-level convenience caller"""
-    return Labrador().g(uri)
+    return Labrador().g(uri, check_cache=check_cache)
 
-def g(uri):
-    """Module-level convenience caller"""
-    return Labrador().g(uri)
+g = get
 
 def dumps(d,
         fmts={
